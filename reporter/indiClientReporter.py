@@ -108,3 +108,7 @@ class IndiClientReporter(PyIndi.BaseClient):
                         for t in tpy:
                             pass
             time.sleep(interval)
+
+if __name__ == "__main__":
+    pass
+

@@ -17,3 +17,6 @@ def format_measurement_to_str_influx(measure, device, field, label, value):
         "("+label+")"+"="+quotation+value+quotation
 
     return data.upper()
+
+if __name__ == "__main__":
+    pass

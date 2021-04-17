@@ -46,3 +46,6 @@ class StatsReporter:
             # attempt to recreate socket on error
             self.close_socket()
             self.create_socket()
+
+if __name__ == "__main__":
+    pass

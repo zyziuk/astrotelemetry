@@ -27,3 +27,4 @@ indiclient = IndiClientReporter(reporter)
 indiclient.setServer(indi_ip, indi_tcp_port)
 indiclient.connectServer()
 indiclient.reportAllIndiProps(report_interval)
+
