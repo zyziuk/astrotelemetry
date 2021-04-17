@@ -1,8 +1,12 @@
+import sys
+sys.path.append('reporter')
+
 import socket
 import atexit
+
 from statsReporter import StatsReporter
 from indiClientReporter import IndiClientReporter
-from formatter import format_measurement_to_str_influx
+from influxFormatter import format_measurement_to_str_influx
 
 verbose = True
 
