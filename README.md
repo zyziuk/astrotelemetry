@@ -1,2 +1,2 @@
-# astrotelemetry
+# astrotelemetry.com
 work in progress ...
