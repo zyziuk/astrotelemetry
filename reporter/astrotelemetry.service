@@ -1,12 +1,12 @@
 [Unit]
-Description=tars
+Description=astrotelemetry
 After=multi-user.target
 
 [Service]
 Type=idle
 # MUST SET YOUR USERNAME HERE.
 User=case
-ExecStart=/usr/bin/python3 /home/case/Projects/astropicture/astrotelemetry.py
+ExecStart=/usr/bin/python3 /home/case/Projects/astrotelemetry/reporter/astrotelemetry.py
 Restart=always
 RestartSec=5
 

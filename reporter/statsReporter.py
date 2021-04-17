@@ -9,12 +9,14 @@ class StatsReporter:
         socket_type,
         socket_address,
         encoding='utf-8',
-        formatter=None
+        formatter=False,
+        verbose=False
     ):
         self._socket_type = socket_type
         self._socket_address = socket_address
         self._encoding = encoding
         self._formatter = formatter
+        self._verbose = verbose
         self.create_socket()
 
     def create_socket(self):
@@ -33,11 +35,14 @@ class StatsReporter:
 
     def send_data(self, data):
         try:
-            sent = self._sock.sendto(data.encode(self._encoding),self._socket_address)
+            if(self._verbose):
+                print(data)
+
+            sent = self._sock.sendto(data.encode(
+                self._encoding), self._socket_address)
 
         except (AttributeError, socket.error) as e:
 
             # attempt to recreate socket on error
             self.close_socket()
             self.create_socket()
-
