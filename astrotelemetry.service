@@ -5,7 +5,8 @@ After=multi-user.target
 [Service]
 Type=idle
 User=case
-ExecStart=/usr/bin/python3 /home/case/Projects/astrotelemetry/reporter/astrotelemetry.py
+WorkingDirectory=/home/case/Projects/astrotelemetry/
+ExecStart=/usr/bin/python3 /home/case/Projects/astrotelemetry/astrotelemetry.py
 Restart=always
 RestartSec=5
 
