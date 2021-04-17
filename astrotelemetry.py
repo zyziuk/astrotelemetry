@@ -16,7 +16,7 @@ telegraf_udp_port = 8094
 indi_ip = 'localhost'
 indi_tcp_port = 7624
 
-report_interval = 9
+report_interval = 10
 
 
 reporter = StatsReporter((socket.AF_INET, socket.SOCK_DGRAM), (telegraf_ip, telegraf_udp_port),
