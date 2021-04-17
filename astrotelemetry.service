@@ -4,7 +4,6 @@ After=multi-user.target
 
 [Service]
 Type=idle
-# MUST SET YOUR USERNAME HERE.
 User=case
 ExecStart=/usr/bin/python3 /home/case/Projects/astrotelemetry/reporter/astrotelemetry.py
 Restart=always
