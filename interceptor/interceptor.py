@@ -1,3 +1,7 @@
+import sys
+sys.path.append('indiclient')
+from indiClient import IndiClient
+
 import time
 import matplotlib.pyplot as plt
 from astropy.io import fits
@@ -6,10 +10,13 @@ from PIL import Image
 
 
 class interceptor:
-    def __init__(self):
+    def __init__(
+        self
+    ):
         super(interceptor, self).__init__()
 
-    def take_picture:
+
+    def take_picture(self):
 
         # Let's take some pictures
         ccd="ZWO CCD ASI290MM Mini"
@@ -85,6 +92,15 @@ class interceptor:
 
 
 if __name__ == "__main__":
-    pass
+
+    indiclient=IndiClient()
+    indiclient.setServer("localhost",7624)
+
+    indiclient.connectServer()
+    while (1):
+        pass
+
+    
+
 
 
