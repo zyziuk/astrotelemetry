@@ -10,14 +10,6 @@ sys.path.append('indiclient')
 from indiClient import IndiClient
 
 
-from colour_demosaicing import (
-    EXAMPLES_RESOURCES_DIRECTORY,
-    demosaicing_CFA_Bayer_bilinear,
-    demosaicing_CFA_Bayer_Malvar2004,
-    demosaicing_CFA_Bayer_Menon2007,
-    mosaicing_CFA_Bayer)
-
-
 class interceptor(IndiClient):
     def __init__(
         self
@@ -77,16 +69,20 @@ class interceptor(IndiClient):
 
     def saveBlobToFits(self, blob):
         fits = blob.getblobdata()
-        f = open('tmp/image.fits', 'wb')
+        f = open('/tmp/image.fits', 'wb')
         f.write(fits)
         f.close()
-        return 'tmp/image.fits'
+        return '/tmp/image.fits'
 
 
     def fits2png(self, fitsFile):
         os.system("fitspng -f logistic -fr 0.3,2 -s 4 " + fitsFile)
         return shutil.move("image.png",fitsFile.replace(".fits",".png"))
-        # return fitsFile.replace(".fits",".png")
+        
+    def transport(self, pngFile, remote):
+        os.system("scp " + pngFile + " " + remote)
+    
+
 
 if __name__ == "__main__":
 
@@ -104,12 +100,12 @@ if __name__ == "__main__":
         for blob in ccd1:
             print("name: ", blob.name, " size: ", blob.size, " format: ", blob.format)
             fitsFile = interceptor.saveBlobToFits(blob)
-            interceptor.fits2png(fitsFile)
+            pngFile = interceptor.fits2png(fitsFile)
+            interceptor.transport(pngFile,"root@astrotelemetry.com:/var/www/html/")
 
         blobEvent.clear()        
         time.sleep(1)
         
-    # interceptor.processFits("tmp/M_42_Light_020.fits")
 
 
 
