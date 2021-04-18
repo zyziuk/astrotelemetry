@@ -1,13 +1,21 @@
-from PIL import Image
-import numpy as np
 from astropy.io import fits
-import matplotlib.pyplot as plt
 import time
 import sys
+import PyIndi
+import os
+import threading
+import io
+import shutil
 sys.path.append('indiclient')
 from indiClient import IndiClient
-import PyIndi
-import threading
+
+
+from colour_demosaicing import (
+    EXAMPLES_RESOURCES_DIRECTORY,
+    demosaicing_CFA_Bayer_bilinear,
+    demosaicing_CFA_Bayer_Malvar2004,
+    demosaicing_CFA_Bayer_Menon2007,
+    mosaicing_CFA_Bayer)
 
 
 class interceptor(IndiClient):
@@ -67,34 +75,18 @@ class interceptor(IndiClient):
         return ccd1
 
 
-    def processFits(self, data = None):
-        
-        # hdul = fits.open("image.fits")
-        # hdul.info()
-        # hdul.close()
+    def saveBlobToFits(self, blob):
+        fits = blob.getblobdata()
+        f = open('tmp/image.fits', 'wb')
+        f.write(fits)
+        f.close()
+        return 'tmp/image.fits'
 
-        # data = fits.getdata("image.fits", ext=0)
-        # print(data.shape)
 
-        # # If nothing is there try the second one
-        # if data is None:
-        #     data = fits.open("image.fits")[1].data
-
-        # vmin = 0
-        # vmax = 2
-
-        # # Scale data to range [0, 1]
-        # data = (data - vmin)/(vmax - vmin)
-        # # Convert to 8-bit integer
-        # data = (255*data).astype(np.uint8)
-        # # Invert y axis
-        # data = data[::-1, :]
-
-        # # Create image from data array and save as jpg
-        # image = Image.fromarray(data, 'L')
-        # imagename = "image.fits".replace('.fits', '.jpg')
-        # image.save(imagename)
-        pass
+    def fits2png(self, fitsFile):
+        os.system("fitspng -f logistic -fr 0.3,2 -s 4 " + fitsFile)
+        return shutil.move("image.png",fitsFile.replace(".fits",".png"))
+        # return fitsFile.replace(".fits",".png")
 
 if __name__ == "__main__":
 
@@ -108,15 +100,16 @@ if __name__ == "__main__":
     
     while (1):
         blobEvent.wait()
-        print("dupa")
 
         for blob in ccd1:
             print("name: ", blob.name, " size: ", blob.size, " format: ", blob.format)
-            fits = blob.getblobdata()
-            print("fits data type: ", type(fits))
-            interceptor.processFits(fits)
+            fitsFile = interceptor.saveBlobToFits(blob)
+            interceptor.fits2png(fitsFile)
 
         blobEvent.clear()        
         time.sleep(1)
         
+    # interceptor.processFits("tmp/M_42_Light_020.fits")
+
+
 
