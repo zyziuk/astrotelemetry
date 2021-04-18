@@ -13,7 +13,7 @@ class Interceptor(IndiClient):
     def __init__(
         self
     ):
-        super(interceptor, self).__init__()
+        super(Interceptor, self).__init__()
 
     def newBLOB(self, bp):
         print("new BLOB ", bp.name)

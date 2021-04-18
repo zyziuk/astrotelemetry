@@ -5,7 +5,7 @@ from statsReporter import StatsReporter
 
 class IndiReporter(PyIndi.BaseClient):
     def __init__(self, StatsReporter):
-        super(IndiClientReporter, self).__init__()
+        super(IndiReporter, self).__init__()
         self.reporter = StatsReporter
 
     def strISState(self, s):

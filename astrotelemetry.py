@@ -8,9 +8,9 @@ import socket
 import atexit
 import threading
 
-from interceptor import interceptor
+from interceptor import Interceptor
 from statsReporter import StatsReporter
-from indiClientReporter import IndiClientReporter
+from indiReporter import IndiReporter
 from influxFormatter import format_measurement_to_str_influx
 
 
@@ -24,16 +24,15 @@ report_interval = 10
 
 def interceptorWorker():
     """thread worker function"""
-    print ('interceptorWorker')
+    print('interceptorWorker')
     interceptor.process()
     return
 
 def indiReporterWorker():
     """thread worker function"""
-    print ('indiPropsWorker')
+    print('indiPropsWorker')
     indiReporter.process(report_interval)
     return
-
 
 reporter = StatsReporter((socket.AF_INET, socket.SOCK_DGRAM), (telegraf_ip, telegraf_udp_port),
                          formatter=format_measurement_to_str_influx, verbose=verbose)
@@ -41,23 +40,23 @@ atexit.register(reporter.close_socket)
 
 indiReporter = IndiReporter(reporter)
 indiReporter.setServer(indi_ip, indi_tcp_port)
-interceptor = interceptor()
+interceptor = Interceptor()
 interceptor.setServer(indi_ip, indi_tcp_port)
 
-while(indiclient.isServerConnected() == False):    
+while(indiReporter.isServerConnected() == False):
     print("indiReporter: Trying to connect ...")
     indiReporter.connectServer()
     time.sleep(1)
 print("indiReporter.connectServer(): OK")
 
-while(interceptor.isServerConnected() == False):    
+while(interceptor.isServerConnected() == False):
     print("interceptor: Trying to connect ...")
     interceptor.connectServer()
     time.sleep(1)
 print("interceptor.connectServer(): OK")
 
-t1 = threading.Thread(target = interceptorWorker)
-t2 = threading.Thread(target = indiReporterWorker)
+t1 = threading.Thread(target=interceptorWorker)
+t2 = threading.Thread(target=indiReporterWorker)
 
 t1.start()
 t2.start()
