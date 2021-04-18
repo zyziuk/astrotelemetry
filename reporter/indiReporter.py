@@ -3,7 +3,7 @@ import time
 from statsReporter import StatsReporter
 
 
-class IndiClientReporter(PyIndi.BaseClient):
+class IndiReporter(PyIndi.BaseClient):
     def __init__(self, StatsReporter):
         super(IndiClientReporter, self).__init__()
         self.reporter = StatsReporter
@@ -74,7 +74,7 @@ class IndiClientReporter(PyIndi.BaseClient):
     def serverDisconnected(self, code):
         pass
 
-    def reportAllIndiProps(self, interval):
+    def process(self, interval):
         while (True):
             dl = self.getDevices()
             for dev in dl:

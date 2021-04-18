@@ -3,3 +3,4 @@ reporter/__pycache__/influxFormatter.cpython-38.pyc
 reporter/__pycache__/statsReporter.cpython-38.pyc
 indiclient/__pycache__/indiClient.cpython-38.pyc
 .vscode/launch.json
+interceptor/__pycache__/interceptor.cpython-38.pyc

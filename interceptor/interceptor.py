@@ -9,14 +9,11 @@ import shutil
 sys.path.append('indiclient')
 from indiClient import IndiClient
 
-
-class interceptor(IndiClient):
+class Interceptor(IndiClient):
     def __init__(
         self
     ):
         super(interceptor, self).__init__()
-
-    global blobEvent
 
     def newBLOB(self, bp):
         print("new BLOB ", bp.name)
@@ -72,39 +69,44 @@ class interceptor(IndiClient):
         f = open('/tmp/image.fits', 'wb')
         f.write(fits)
         f.close()
+
         return '/tmp/image.fits'
 
 
     def fits2png(self, fitsFile):
         os.system("fitspng -f logistic -fr 0.3,2 -s 4 " + fitsFile)
+        
         return shutil.move("image.png",fitsFile.replace(".fits",".png"))
         
     def transport(self, pngFile, remote):
         os.system("scp " + pngFile + " " + remote)
+
+    def process(self):
+        ccd1 = self.interceptCCD1()
+        
+        global blobEvent
+        blobEvent = threading.Event()
+        
+        while (1):
+            blobEvent.wait()
+
+            for blob in ccd1:
+                print("name: ", blob.name, " size: ", blob.size, " format: ", blob.format)
+                fitsFile = self.saveBlobToFits(blob)
+                pngFile = self.fits2png(fitsFile)
+                self.transport(pngFile,"root@astrotelemetry.com:/var/www/html/")
+
+            blobEvent.clear()        
+            time.sleep(1)
     
 
 
 if __name__ == "__main__":
 
-    interceptor = interceptor()
+    interceptor = Interceptor()
     interceptor.setServer("localhost", 7624)
     interceptor.connectServer()
-
-    ccd1 = interceptor.interceptCCD1()
-
-    blobEvent = threading.Event()
-    
-    while (1):
-        blobEvent.wait()
-
-        for blob in ccd1:
-            print("name: ", blob.name, " size: ", blob.size, " format: ", blob.format)
-            fitsFile = interceptor.saveBlobToFits(blob)
-            pngFile = interceptor.fits2png(fitsFile)
-            interceptor.transport(pngFile,"root@astrotelemetry.com:/var/www/html/")
-
-        blobEvent.clear()        
-        time.sleep(1)
+    interceptor.process()
         
 
 
