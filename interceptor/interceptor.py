@@ -13,13 +13,14 @@ import logging
 
 
 class Interceptor(IndiClient):
-    def __init__(
-        self
-    ):
+    def __init__(self, ccdName, fitsFile, remoteSSHServer, fitspngCmd):
         super(Interceptor, self).__init__()
-        logging.basicConfig(
-            format='%(asctime)s [%(filename)s %(module)s %(funcName)s] %(message)s', level=logging.INFO)
+        logging.basicConfig(format='%(asctime)s [%(filename)s %(module)s %(funcName)s] %(message)s', level=logging.INFO)
         self.logger = logging.getLogger('Interceptor')
+        self.ccdName = ccdName
+        self.remoteSSHServer = remoteSSHServer
+        self.fitsFile = fitsFile
+        self.fitspngCmd = fitspngCmd
 
     def newBLOB(self, bp):
         blobEvent.set()
@@ -27,11 +28,10 @@ class Interceptor(IndiClient):
     def interceptCCD1(self):
 
         # Let's take some pictures
-        ccd = "ZWO CCD ASI290MM Mini"
-        device_ccd = self.getDevice(ccd)
+        device_ccd = self.getDevice(self.ccdName)
         while not(device_ccd):
             time.sleep(0.5)
-            device_ccd = self.getDevice(ccd)
+            device_ccd = self.getDevice(self.ccdName)
 
         ccd_connect = device_ccd.getSwitch("CONNECTION")
         while not(ccd_connect):
@@ -59,7 +59,7 @@ class Interceptor(IndiClient):
 
         # we should inform the indi server that we want to receive the
         # "CCD1" blob from this device
-        self.setBLOBMode(PyIndi.B_ALSO, ccd, "CCD1")
+        self.setBLOBMode(PyIndi.B_ALSO, self.ccdName, "CCD1")
 
         ccd1 = device_ccd.getBLOB("CCD1")
         while not(ccd1):
@@ -70,14 +70,14 @@ class Interceptor(IndiClient):
 
     def saveBlobToFits(self, blob):
         fits = blob.getblobdata()
-        f = open('/tmp/image.fits', 'wb')
+        f = open(self.fitsFile, 'wb')
         f.write(fits)
         f.close()
 
-        return '/tmp/image.fits'
+        return self.fitsFile
 
     def fits2png(self, fitsFile):
-        os.system("fitspng -f logistic -fr 0.3,2 -s 4 " + fitsFile)
+        os.system(self.fitspngCmd + " " + fitsFile)
 
         return shutil.move("image.png", fitsFile.replace(".fits", ".png"))
 
@@ -96,8 +96,8 @@ class Interceptor(IndiClient):
             for blob in ccd1:
                 fitsFile = self.saveBlobToFits(blob)
                 pngFile = self.fits2png(fitsFile)
-                self.transport(
-                    pngFile, "root@astrotelemetry.com:/var/www/html/")
+                self.logger.info("Transfering %s to %s ...", pngFile, self.remoteSSHServer)
+                self.transport(pngFile, self.remoteSSHServer)
 
             blobEvent.clear()
             time.sleep(1)

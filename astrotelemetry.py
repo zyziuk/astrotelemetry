@@ -12,16 +12,18 @@ import socket
 import time
 
 
-
 verbose = False
 telegraf_ip = 'localhost'
 telegraf_udp_port = 8094
 indi_ip = 'localhost'
 indi_tcp_port = 7624
 report_interval = 10
+ccdName = "Nikon DSLR Z6"
+remoteSSHServer = "root@astrotelemetry.com:/var/www/html/"
+fitsFile = "/tmp/image.fits"
+fitspngCmd = "fitspng -f logistic -fr 0.3,2 -s 4"
 
-logging.basicConfig(
-    format='%(asctime)s [%(filename)s %(module)s %(funcName)s] %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s [%(filename)s %(module)s %(funcName)s] %(message)s', level=logging.INFO)
 logger = logging.getLogger('astrotelemetry')
 
 
@@ -43,7 +45,7 @@ atexit.register(reporter.close_socket)
 
 indiReporter = IndiReporter(reporter)
 indiReporter.setServer(indi_ip, indi_tcp_port)
-interceptor = Interceptor()
+interceptor = Interceptor(ccdName, fitsFile, remoteSSHServer, fitspngCmd)
 interceptor.setServer(indi_ip, indi_tcp_port)
 
 while(indiReporter.isServerConnected() == False):
