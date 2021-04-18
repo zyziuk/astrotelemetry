@@ -1,38 +1,41 @@
 import sys
 sys.path.append('reporter')
 sys.path.append('interceptor')
-
+from influxFormatter import format_measurement_to_str_influx
+from indiReporter import IndiReporter
+from statsReporter import StatsReporter
+from interceptor import Interceptor
+import logging
+import threading
+import atexit
+import socket
 import time
 
-import socket
-import atexit
-import threading
-
-from interceptor import Interceptor
-from statsReporter import StatsReporter
-from indiReporter import IndiReporter
-from influxFormatter import format_measurement_to_str_influx
 
 
 verbose = False
-
 telegraf_ip = 'localhost'
 telegraf_udp_port = 8094
 indi_ip = 'localhost'
 indi_tcp_port = 7624
 report_interval = 10
 
+logging.basicConfig(
+    format='%(asctime)s [%(filename)s %(module)s %(funcName)s] %(message)s', level=logging.INFO)
+logger = logging.getLogger('astrotelemetry')
+
+
 def interceptorWorker():
-    """thread worker function"""
-    print('interceptorWorker')
+    logger.info("running interceptorWorker...")
     interceptor.process()
     return
 
+
 def indiReporterWorker():
-    """thread worker function"""
-    print('indiPropsWorker')
+    logger.info("running indiReporterWorker...")
     indiReporter.process(report_interval)
     return
+
 
 reporter = StatsReporter((socket.AF_INET, socket.SOCK_DGRAM), (telegraf_ip, telegraf_udp_port),
                          formatter=format_measurement_to_str_influx, verbose=verbose)
@@ -44,30 +47,19 @@ interceptor = Interceptor()
 interceptor.setServer(indi_ip, indi_tcp_port)
 
 while(indiReporter.isServerConnected() == False):
-    print("indiReporter: Trying to connect ...")
+    logger.info("indiReporter: Trying to connect ...")
     indiReporter.connectServer()
     time.sleep(1)
-print("indiReporter.connectServer(): OK")
+logger.info("indiReporter.connectServer(): OK")
 
 while(interceptor.isServerConnected() == False):
-    print("interceptor: Trying to connect ...")
+    logger.info("interceptor: Trying to connect ...")
     interceptor.connectServer()
     time.sleep(1)
-print("interceptor.connectServer(): OK")
+logger.info("interceptor.connectServer(): OK")
 
 t1 = threading.Thread(target=interceptorWorker)
 t2 = threading.Thread(target=indiReporterWorker)
 
 t1.start()
 t2.start()
-
-
-
-
-
-
-
-
-
-
-

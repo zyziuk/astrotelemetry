@@ -1,22 +1,27 @@
+import sys
+sys.path.append('indiclient')
+from indiClient import IndiClient
 from astropy.io import fits
 import time
-import sys
 import PyIndi
 import os
 import threading
 import io
 import shutil
-sys.path.append('indiclient')
-from indiClient import IndiClient
+import logging
+
+
 
 class Interceptor(IndiClient):
     def __init__(
         self
     ):
         super(Interceptor, self).__init__()
+        logging.basicConfig(
+            format='%(asctime)s [%(filename)s %(module)s %(funcName)s] %(message)s', level=logging.INFO)
+        self.logger = logging.getLogger('Interceptor')
 
     def newBLOB(self, bp):
-        print("new BLOB ", bp.name)
         blobEvent.set()
 
     def interceptCCD1(self):
@@ -63,7 +68,6 @@ class Interceptor(IndiClient):
 
         return ccd1
 
-
     def saveBlobToFits(self, blob):
         fits = blob.getblobdata()
         f = open('/tmp/image.fits', 'wb')
@@ -72,33 +76,31 @@ class Interceptor(IndiClient):
 
         return '/tmp/image.fits'
 
-
     def fits2png(self, fitsFile):
         os.system("fitspng -f logistic -fr 0.3,2 -s 4 " + fitsFile)
-        
-        return shutil.move("image.png",fitsFile.replace(".fits",".png"))
-        
+
+        return shutil.move("image.png", fitsFile.replace(".fits", ".png"))
+
     def transport(self, pngFile, remote):
         os.system("scp " + pngFile + " " + remote)
 
     def process(self):
         ccd1 = self.interceptCCD1()
-        
+
         global blobEvent
         blobEvent = threading.Event()
-        
+
         while (1):
             blobEvent.wait()
 
             for blob in ccd1:
-                print("name: ", blob.name, " size: ", blob.size, " format: ", blob.format)
                 fitsFile = self.saveBlobToFits(blob)
                 pngFile = self.fits2png(fitsFile)
-                self.transport(pngFile,"root@astrotelemetry.com:/var/www/html/")
+                self.transport(
+                    pngFile, "root@astrotelemetry.com:/var/www/html/")
 
-            blobEvent.clear()        
+            blobEvent.clear()
             time.sleep(1)
-    
 
 
 if __name__ == "__main__":
@@ -107,7 +109,3 @@ if __name__ == "__main__":
     interceptor.setServer("localhost", 7624)
     interceptor.connectServer()
     interceptor.process()
-        
-
-
-

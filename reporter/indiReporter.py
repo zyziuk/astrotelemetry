@@ -1,5 +1,6 @@
 import PyIndi
 import time
+import logging
 from statsReporter import StatsReporter
 
 
@@ -7,6 +8,9 @@ class IndiReporter(PyIndi.BaseClient):
     def __init__(self, StatsReporter):
         super(IndiReporter, self).__init__()
         self.reporter = StatsReporter
+        logging.basicConfig(
+            format='%(asctime)s [%(filename)s %(module)s %(funcName)s] %(message)s', level=logging.INFO)
+        self.logger = logging.getLogger('IndiReporter')
 
     def strISState(self, s):
         if (s == PyIndi.ISS_OFF):
@@ -34,16 +38,7 @@ class IndiReporter(PyIndi.BaseClient):
         pass
 
     def newBLOB(self, bp):
-        blob = bp
-        print("name: ", blob.name, " size: ",
-              blob.size, " format: ", blob.format)
-        # pyindi-client adds a getblobdata() method to IBLOB item
-        # for accessing the contents of the blob, which is a bytearray in Python
-        fits_file = blob.getblobdata()
-        print("fits data type: ", type(fits_file))
-        f = open('image.fits', 'wb')
-        f.write(fits_file)
-        f.close()
+        pass
 
     def newSwitch(self, svp):
         for l in svp:
@@ -66,7 +61,7 @@ class IndiReporter(PyIndi.BaseClient):
                 lvp.name, lvp.device, l.name, l.label, self.strIPState(l.s)))
 
     def newMessage(self, d, m):
-        print("*  New Message for", d.getDeviceName(), ":", d.messageQueue(m))
+        self.logger.info("%s: %s", d.getDeviceName(), d.messageQueue(m))
 
     def serverConnected(self):
         pass
@@ -109,6 +104,6 @@ class IndiReporter(PyIndi.BaseClient):
                             pass
             time.sleep(interval)
 
+
 if __name__ == "__main__":
     pass
-
